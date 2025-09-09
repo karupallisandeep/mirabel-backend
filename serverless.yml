@@ -1,0 +1,53 @@
+service: mirabel-backend
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    DATABASE_URL: ${env:DATABASE_URL}
+    NODE_ENV: production
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - POST
+        - OPTIONS
+      allowCredentials: false
+
+functions:
+  graphql:
+    handler: dist/lambda.handler
+    events:
+      - httpApi:
+          path: /graphql
+          method: ANY
+      - httpApi:
+          path: /health
+          method: GET
+    timeout: 30
+    memorySize: 512
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 4000
+
+package:
+  exclude:
+    - node_modules/prisma/engines/**
+    - node_modules/@prisma/engines/**
+  include:
+    - dist/**
+    - node_modules/.prisma/**
+    - prisma/schema.prisma
