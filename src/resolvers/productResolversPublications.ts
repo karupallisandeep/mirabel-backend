@@ -51,7 +51,21 @@ const productResolvers = {
   ...scalarResolvers,
 
   Query: {
+    health: () => 'OK',
+    
     products: async (_: unknown, args: any, { prisma }: GraphQLContext) => {
+      if (!prisma) {
+        console.error('Prisma client not available')
+        return {
+          products: [],
+          totalCount: 0,
+          page: args.page || 1,
+          limit: args.limit || 25,
+          hasMore: false
+        }
+      }
+      
+      try {
       const {
         page = 1,
         limit = 25,
@@ -112,66 +126,122 @@ const productResolvers = {
         limit,
         hasMore: offset + limit < totalCount
       }
+      } catch (error) {
+        console.error('Error in products query:', error)
+        return {
+          products: [],
+          totalCount: 0,
+          page: args.page || 1,
+          limit: args.limit || 25,
+          hasMore: false
+        }
+      }
     },
 
     product: async (_: unknown, { id }: any, { prisma }: GraphQLContext) => {
-      const p = await prisma.gspublications.findUnique({
-        where: { gspublicationid: Number(id) },
-        include: { tblproductcategory: true, app_product_extras: true }
-      })
-      if (!p) throw new Error(`Product not found with id: ${id}`)
-      return mapPublicationToProduct(p)
+      if (!prisma) throw new Error('Database not available')
+      try {
+        const p = await prisma.gspublications.findUnique({
+          where: { gspublicationid: Number(id) },
+          include: { tblproductcategory: true, app_product_extras: true }
+        })
+        if (!p) throw new Error(`Product not found with id: ${id}`)
+        return mapPublicationToProduct(p)
+      } catch (error) {
+        console.error('Error in product query:', error)
+        throw error
+      }
     },
 
     productStats: async (_: unknown, _args: any, { prisma }: GraphQLContext) => {
-      const [totalProducts, activeProducts, avg] = await Promise.all([
-        prisma.gspublications.count(),
-        prisma.gspublications.count({ where: { isactive: 1 } }),
-        prisma.gspublications.aggregate({ _avg: { nep: true }, _min: { nep: true }, _max: { nep: true } })
-      ])
+      if (!prisma) {
+        console.error('Prisma client not available in productStats')
+        return {
+          totalProducts: 0,
+          activeProducts: 0,
+          featuredProducts: 0,
+          uniqueTypes: 0,
+          uniqueCategories: 0,
+          averagePrice: 0,
+          minPrice: 0,
+          maxPrice: 0
+        }
+      }
+      
+      try {
+        const [totalProducts, activeProducts, avg] = await Promise.all([
+          prisma.gspublications.count(),
+          prisma.gspublications.count({ where: { isactive: 1 } }),
+          prisma.gspublications.aggregate({ _avg: { nep: true }, _min: { nep: true }, _max: { nep: true } })
+        ])
 
-      return {
-        totalProducts,
-        activeProducts,
-        featuredProducts: 0,
-        uniqueTypes: 1,
-        uniqueCategories: (await prisma.gspublications.findMany({
-          where: { productcategoryid: { not: null } },
-          distinct: ['productcategoryid'],
-          select: { productcategoryid: true }
-        })).length,
-        averagePrice: Number((avg as any)._avg.nep || 0),
-        minPrice: Number((avg as any)._min.nep || 0),
-        maxPrice: Number((avg as any)._max.nep || 0)
+        return {
+          totalProducts,
+          activeProducts,
+          featuredProducts: 0,
+          uniqueTypes: 1,
+          uniqueCategories: (await prisma.gspublications.findMany({
+            where: { productcategoryid: { not: null } },
+            distinct: ['productcategoryid'],
+            select: { productcategoryid: true }
+          })).length,
+          averagePrice: Number((avg as any)._avg.nep || 0),
+          minPrice: Number((avg as any)._min.nep || 0),
+          maxPrice: Number((avg as any)._max.nep || 0)
+        }
+      } catch (error) {
+        console.error('Error in productStats:', error)
+        return {
+          totalProducts: 0,
+          activeProducts: 0,
+          featuredProducts: 0,
+          uniqueTypes: 0,
+          uniqueCategories: 0,
+          averagePrice: 0,
+          minPrice: 0,
+          maxPrice: 0
+        }
       }
     },
 
     productsByType: async (_: unknown, _args: any, { prisma }: GraphQLContext) => {
-      const total = await prisma.gspublications.count()
-      const active = await prisma.gspublications.count({ where: { isactive: 1 } })
-      return [{ type: 'PRINT', count: total, activeCount: active, averagePrice: 0 }]
+      if (!prisma) return [{ type: 'PRINT', count: 0, activeCount: 0, averagePrice: 0 }]
+      try {
+        const total = await prisma.gspublications.count()
+        const active = await prisma.gspublications.count({ where: { isactive: 1 } })
+        return [{ type: 'PRINT', count: total, activeCount: active, averagePrice: 0 }]
+      } catch (error) {
+        console.error('Error in productsByType:', error)
+        return [{ type: 'PRINT', count: 0, activeCount: 0, averagePrice: 0 }]
+      }
     },
 
     productsByCategory: async (_: unknown, _args: any, { prisma }: GraphQLContext) => {
-      const groups = await prisma.gspublications.groupBy({
-        by: ['productcategoryid'],
-        _count: true,
-        _avg: { nep: true }
-      })
-      const ids = groups.map((g: any) => g.productcategoryid).filter((x: any) => x != null)
-      const cats = ids.length
-        ? await prisma.tblproductcategory.findMany({
-            where: { productcategoryid: { in: ids } },
-            select: { productcategoryid: true, name: true }
-          })
-        : []
-      const idToName = new Map<number, string>(cats.map((c: any) => [c.productcategoryid, c.name]))
-      return groups.map((g: any) => ({
-        category: g.productcategoryid != null ? (idToName.get(g.productcategoryid) || String(g.productcategoryid)) : 'uncategorized',
-        count: g._count,
-        activeCount: g._count,
-        averagePrice: Number(g._avg.nep || 0)
-      }))
+      if (!prisma) return [{ category: 'uncategorized', count: 0, activeCount: 0, averagePrice: 0 }]
+      try {
+        const groups = await prisma.gspublications.groupBy({
+          by: ['productcategoryid'],
+          _count: true,
+          _avg: { nep: true }
+        })
+        const ids = groups.map((g: any) => g.productcategoryid).filter((x: any) => x != null)
+        const cats = ids.length
+          ? await prisma.tblproductcategory.findMany({
+              where: { productcategoryid: { in: ids } },
+              select: { productcategoryid: true, name: true }
+            })
+          : []
+        const idToName = new Map<number, string>(cats.map((c: any) => [c.productcategoryid, c.name]))
+        return groups.map((g: any) => ({
+          category: g.productcategoryid != null ? (idToName.get(g.productcategoryid) || String(g.productcategoryid)) : 'uncategorized',
+          count: g._count,
+          activeCount: g._count,
+          averagePrice: Number(g._avg.nep || 0)
+        }))
+      } catch (error) {
+        console.error('Error in productsByCategory:', error)
+        return [{ category: 'uncategorized', count: 0, activeCount: 0, averagePrice: 0 }]
+      }
     },
 
     searchProducts: async (_: unknown, { searchTerm, limit = 10, includeInactive = false }: any, { prisma }: GraphQLContext) => {

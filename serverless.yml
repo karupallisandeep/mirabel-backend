@@ -8,8 +8,16 @@ provider:
   region: us-east-1
   stage: ${opt:stage, 'dev'}
   environment:
-    DATABASE_URL: ${env:DATABASE_URL}
+    DATABASE_URL: "postgresql://postgres:Migration2025@dev-aurorapg17.cluster-custom-cd67qapnp4nh.us-east-1.rds.amazonaws.com:5432/marksqltemplate20?schema=app"
     NODE_ENV: production
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - rds:DescribeDBInstances
+            - rds:DescribeDBClusters
+          Resource: "*"
   httpApi:
     cors:
       allowedOrigins:
@@ -17,6 +25,8 @@ provider:
       allowedHeaders:
         - Content-Type
         - Authorization
+        - x-apollo-operation-name
+        - apollo-require-preflight
       allowedMethods:
         - GET
         - POST
@@ -25,29 +35,42 @@ provider:
 
 functions:
   graphql:
-    handler: dist/lambda.handler
+    handler: src/lambda.handler
     events:
       - httpApi:
-          path: /graphql
+          path: /{proxy+}
           method: ANY
-      - httpApi:
-          path: /health
-          method: GET
     timeout: 30
     memorySize: 512
+    environment:
+      PRISMA_CLI_BINARY_TARGETS: rhel-openssl-1.0.x
 
 plugins:
+  - serverless-esbuild
   - serverless-offline
 
 custom:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: false
+    external:
+      - '@prisma/client'
+    packager: npm
+    platform: node
+    target: node18
+    nativeZip: true
   serverless-offline:
     httpPort: 4000
 
 package:
-  exclude:
-    - node_modules/prisma/engines/**
-    - node_modules/@prisma/engines/**
-  include:
-    - dist/**
-    - node_modules/.prisma/**
-    - prisma/schema.prisma
+  individually: true
+  patterns:
+    - 'src/graphql/**'
+    - 'prisma/**'
+    - '!node_modules/**'
+    - 'node_modules/.prisma/**'
+    - 'node_modules/@prisma/client/**'
+    - '!node_modules/@prisma/engines/**'
+    - '!node_modules/.prisma/client/libquery_engine-*'
+    - 'node_modules/.prisma/client/libquery_engine-rhel-*'

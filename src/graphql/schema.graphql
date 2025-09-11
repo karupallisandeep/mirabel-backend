@@ -3,6 +3,7 @@ scalar DateTime
 scalar JSON
 
 type Query {
+  health: String!
   products(
     page: Int = 1
     limit: Int = 25
