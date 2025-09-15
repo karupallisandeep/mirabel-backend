@@ -170,7 +170,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/mirabel-backend/dev/1757601083690-2025-09-11T14:31:23.690Z/graphql.zip"
+          "S3Key": "serverless/mirabel-backend/dev/1757603667458-2025-09-11T15:14:27.458Z/graphql.zip"
         },
         "Handler": "src/lambda.handler",
         "Runtime": "nodejs18.x",
@@ -195,14 +195,14 @@
         "GraphqlLogGroup"
       ]
     },
-    "GraphqlLambdaVersionS379JCNnBDaQVFnTd7j55Y2TgGn7pmCvbMOVM1seI": {
+    "GraphqlLambdaVersionTYmawMApzFIgqnjIWQX6TXAR5xMdphwFkReV4aDXNgg": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GraphqlLambdaFunction"
         },
-        "CodeSha256": "xSGVe1SHPWUjONr7WK1IL5oKGeVLonAtXs16g8k/ZMw="
+        "CodeSha256": "NTuQC3Vvwh2dsDzFpXF5/FhmwBZpsRE4KaqLuzZw8uQ="
       }
     },
     "HttpApi": {
@@ -329,7 +329,7 @@
     "GraphqlLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GraphqlLambdaVersionS379JCNnBDaQVFnTd7j55Y2TgGn7pmCvbMOVM1seI"
+        "Ref": "GraphqlLambdaVersionTYmawMApzFIgqnjIWQX6TXAR5xMdphwFkReV4aDXNgg"
       },
       "Export": {
         "Name": "sls-mirabel-backend-dev-GraphqlLambdaFunctionQualifiedArn"
