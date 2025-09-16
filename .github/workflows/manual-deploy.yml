@@ -45,9 +45,9 @@ jobs:
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
-    - name: 🗄️ Update Database Schema
+    - name: 🗄️ Deploy Database Migrations
       if: github.event.inputs.deployment_type == 'full' || github.event.inputs.deployment_type == 'schema-only'
-      run: npx prisma db push
+      run: npx prisma migrate deploy
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         

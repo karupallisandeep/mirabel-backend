@@ -38,12 +38,12 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [4/6] Updating database schema...
-echo (Applying any schema changes to your database)
-call npx prisma db push
+echo [4/6] Deploying database migrations...
+echo (Applying any migration files to your database)
+call npx prisma migrate deploy
 if %errorlevel% neq 0 (
-    echo WARNING: Database schema update failed
-    echo This might be okay if no schema changes were made
+    echo WARNING: Database migration deployment failed
+    echo This might be okay if no new migrations exist
     echo Continuing with deployment...
 )
 
@@ -69,7 +69,7 @@ echo.
 echo Your API is now live at:
 echo https://8kihckwkhf.execute-api.us-east-1.amazonaws.com/graphql
 echo.
-echo ✅ Database schema: Updated (if changes were made)
+echo ✅ Database migrations: Deployed (if any pending)
 echo ✅ Backend code: Deployed to AWS
 echo ✅ API health: Verified working
 echo.

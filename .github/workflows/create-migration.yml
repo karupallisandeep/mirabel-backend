@@ -1,0 +1,56 @@
+name: 🗄️ Create Database Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      migration_name:
+        description: 'Migration name (e.g., add_user_table)'
+        required: true
+        type: string
+      auto_deploy:
+        description: 'Auto-deploy after creating migration'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  create-migration:
+    name: Create Migration
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📦 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📋 Install dependencies
+      run: npm ci
+      
+    - name: 🗄️ Create Migration
+      run: npx prisma migrate dev --name "${{ github.event.inputs.migration_name }}"
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: 📁 Commit Migration Files
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add prisma/migrations/
+        git commit -m "Add migration: ${{ github.event.inputs.migration_name }}" || exit 0
+        git push
+        
+    - name: 🚀 Auto-Deploy (if requested)
+      if: github.event.inputs.auto_deploy == 'true'
+      uses: ./.github/workflows/deploy.yml
+      
+    - name: ✅ Migration Created
+      run: |
+        echo "🎉 Migration created successfully!"
+        echo "Migration name: ${{ github.event.inputs.migration_name }}"
+        echo "Files created in: prisma/migrations/"
+        echo "Migration has been committed to repository"
