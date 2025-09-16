@@ -12833,3 +12833,16 @@ model gsSubscription {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model gsSubscriptionStats {
+  id          String   @id @default(uuid())
+  planName    String
+  status      String @default(ACTIVE)
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  autoRenew   Boolean  @default(true)
+  price       Decimal  @db.Decimal(10, 2)
+  currency    String   @default("USD")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
