@@ -17,6 +17,8 @@
     "prisma:introspect": "prisma db pull",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "auto-migrate": "node scripts/auto-migrate.js",
+    "test-auto-migrate": "node scripts/test-auto-migrate.js",
     "health": "node -e \"console.log('OK')\"",
     "postinstall": "prisma generate"
   },

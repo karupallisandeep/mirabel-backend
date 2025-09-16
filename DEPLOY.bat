@@ -38,13 +38,14 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [4/6] Deploying database migrations...
-echo (Applying any migration files to your database)
-call npx prisma migrate deploy
+echo [4/6] Auto-migrating database schema...
+echo (Automatically handling any schema changes)
+call node scripts/auto-migrate.js
 if %errorlevel% neq 0 (
-    echo WARNING: Database migration deployment failed
-    echo This might be okay if no new migrations exist
-    echo Continuing with deployment...
+    echo ERROR: Auto-migration failed
+    echo Please check the error messages above
+    pause
+    exit /b 1
 )
 
 echo.
@@ -69,7 +70,7 @@ echo.
 echo Your API is now live at:
 echo https://8kihckwkhf.execute-api.us-east-1.amazonaws.com/graphql
 echo.
-echo ✅ Database migrations: Deployed (if any pending)
+echo ✅ Database schema: Auto-migrated successfully
 echo ✅ Backend code: Deployed to AWS
 echo ✅ API health: Verified working
 echo.

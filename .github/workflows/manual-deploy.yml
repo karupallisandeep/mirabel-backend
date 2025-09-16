@@ -45,9 +45,12 @@ jobs:
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
-    - name: 🗄️ Deploy Database Migrations
+    - name: 🗄️ Auto-Migrate Database Schema
       if: github.event.inputs.deployment_type == 'full' || github.event.inputs.deployment_type == 'schema-only'
-      run: npx prisma migrate deploy
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Auto-Migration"
+        node scripts/auto-migrate.js
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
