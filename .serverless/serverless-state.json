@@ -214,7 +214,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/mirabel-backend/dev/1757603667458-2025-09-11T15:14:27.458Z/graphql.zip"
+                "S3Key": "serverless/mirabel-backend/dev/1757946027614-2025-09-15T14:20:27.614Z/graphql.zip"
               },
               "Handler": "src/lambda.handler",
               "Runtime": "nodejs18.x",
@@ -239,14 +239,14 @@
               "GraphqlLogGroup"
             ]
           },
-          "GraphqlLambdaVersionTYmawMApzFIgqnjIWQX6TXAR5xMdphwFkReV4aDXNgg": {
+          "GraphqlLambdaVersionPiUsl3sLeK5B1WXP2mBbj2WdfgnDBbGKh6kr8pq2TM": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "GraphqlLambdaFunction"
               },
-              "CodeSha256": "NTuQC3Vvwh2dsDzFpXF5/FhmwBZpsRE4KaqLuzZw8uQ="
+              "CodeSha256": "iMbVXvd0ZZrqRQhPFcvrTqM2p07DuOLaPvgFteKA0eQ="
             }
           },
           "HttpApi": {
@@ -370,7 +370,7 @@
           "GraphqlLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GraphqlLambdaVersionTYmawMApzFIgqnjIWQX6TXAR5xMdphwFkReV4aDXNgg"
+              "Ref": "GraphqlLambdaVersionPiUsl3sLeK5B1WXP2mBbj2WdfgnDBbGKh6kr8pq2TM"
             },
             "Export": {
               "Name": "sls-mirabel-backend-dev-GraphqlLambdaFunctionQualifiedArn"
@@ -543,7 +543,7 @@
         "memory": 512,
         "runtime": "nodejs18.x",
         "vpc": {},
-        "versionLogicalId": "GraphqlLambdaVersionTYmawMApzFIgqnjIWQX6TXAR5xMdphwFkReV4aDXNgg"
+        "versionLogicalId": "GraphqlLambdaVersionPiUsl3sLeK5B1WXP2mBbj2WdfgnDBbGKh6kr8pq2TM"
       }
     },
     "configValidationMode": "warn",
@@ -583,7 +583,7 @@
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/mirabel-backend/dev/1757603667458-2025-09-11T15:14:27.458Z",
+    "artifactDirectoryName": "serverless/mirabel-backend/dev/1757946027614-2025-09-15T14:20:27.614Z",
     "artifact": ""
   }
 }

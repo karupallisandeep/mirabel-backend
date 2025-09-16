@@ -1,0 +1,80 @@
+name: 🎮 Manual Deploy (CEO Dashboard)
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_type:
+        description: 'Deployment Type'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - code-only
+        - schema-only
+      environment:
+        description: 'Environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+jobs:
+  deploy:
+    name: 🚀 Deploy Backend (${{ github.event.inputs.deployment_type }})
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📦 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📋 Install dependencies
+      run: npm ci
+      
+    - name: 🔧 Generate Prisma Client
+      if: github.event.inputs.deployment_type == 'full' || github.event.inputs.deployment_type == 'schema-only'
+      run: npx prisma generate
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: 🗄️ Update Database Schema
+      if: github.event.inputs.deployment_type == 'full' || github.event.inputs.deployment_type == 'schema-only'
+      run: npx prisma db push
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: 🏗️ Build application
+      if: github.event.inputs.deployment_type == 'full' || github.event.inputs.deployment_type == 'code-only'
+      run: npm run build
+      
+    - name: ⚡ Configure AWS credentials
+      if: github.event.inputs.deployment_type == 'full' || github.event.inputs.deployment_type == 'code-only'
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        
+    - name: 🚀 Deploy to AWS Lambda
+      if: github.event.inputs.deployment_type == 'full' || github.event.inputs.deployment_type == 'code-only'
+      run: npm run deploy
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: 🧪 Test API Health
+      run: node test-api.js
+      continue-on-error: true
+      
+    - name: ✅ Deployment Success
+      run: |
+        echo "🎉 ${{ github.event.inputs.deployment_type }} deployment completed successfully!"
+        echo "Environment: ${{ github.event.inputs.environment }}"
+        echo "API URL: https://8kihckwkhf.execute-api.us-east-1.amazonaws.com/graphql"

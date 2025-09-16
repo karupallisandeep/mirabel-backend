@@ -12820,3 +12820,16 @@ model tblworkflowactions {
   createddate        DateTime? @default(dbgenerated("clock_timestamp()")) @db.Timestamp(6)
   requiredarguements String?
 }
+
+model gsSubscription {
+  id          String   @id @default(uuid())
+  planName    String
+  status      String
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  autoRenew   Boolean  @default(true)
+  price       Decimal  @db.Decimal(10, 2)
+  currency    String   @default("USD")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

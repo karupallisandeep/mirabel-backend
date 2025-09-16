@@ -1,0 +1,33 @@
+name: 🧪 API Health Check
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Every 6 hours
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  health-check:
+    name: Check API Health
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📦 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: 🧪 Test API Health
+      run: node test-api.js
+      continue-on-error: false
+      
+    - name: ✅ Health Check Passed
+      run: echo "🎉 API is healthy and responding correctly!"
+      
+    - name: 📧 Notify on Failure
+      if: failure()
+      run: |
+        echo "❌ API health check failed!"
+        echo "Please check the API status and logs."

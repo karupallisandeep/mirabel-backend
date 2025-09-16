@@ -1,0 +1,77 @@
+name: 🚀 Deploy Mirabel Backend
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  pull_request:
+    branches: [ main, master ]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+    inputs:
+      force_deploy:
+        description: 'Force deployment even if no changes detected'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  deploy:
+    name: Deploy to AWS Lambda
+    runs-on: ubuntu-latest
+    
+    # Only deploy on push to main/master, not on PRs
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: 📦 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📋 Install dependencies
+      run: npm ci
+      
+    - name: 🔧 Generate Prisma Client
+      run: npx prisma generate
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: 🗄️ Update Database Schema
+      run: npx prisma db push
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: 🏗️ Build application
+      run: npm run build
+      
+    - name: ⚡ Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        
+    - name: 🚀 Deploy to AWS Lambda
+      run: npm run deploy
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: 🧪 Test API Health
+      run: node test-api.js
+      continue-on-error: true
+      
+    - name: ✅ Deployment Success
+      run: |
+        echo "🎉 Deployment completed successfully!"
+        echo "API URL: https://8kihckwkhf.execute-api.us-east-1.amazonaws.com/graphql"
+        echo "Deployed commit: ${{ github.sha }}"
+        echo "Deployed by: ${{ github.actor }}"
+        echo "Branch: ${{ github.ref_name }}"

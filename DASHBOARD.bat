@@ -11,27 +11,29 @@ echo ========================================
 echo.
 echo Current API: https://8kihckwkhf.execute-api.us-east-1.amazonaws.com/graphql
 echo.
+echo 🎯 SIMPLIFIED: Option 1 handles ALL changes automatically!
+echo    (Code, database, schema - everything in one click)
+echo.
+echo 🌐 NEW: You can also deploy via GitHub Actions!
+echo    See "🚀 GITHUB ACTIONS DEPLOYMENT GUIDE.md" for details
+echo.
 echo Choose an option:
 echo.
-echo [1] Deploy Backend to AWS (normal deployment)
-echo [2] Test API Health (check if working)
-echo [3] Fix Prisma Issues (if you get errors)
-echo [4] Update Database Schema (after schema changes)
-echo [5] View Deployment Guide (help documentation)
-echo [6] Schema Changes Help (database changes guide)
-echo [7] Exit
+echo [1] 🚀 Deploy Backend (handles everything automatically)
+echo [2] 🧪 Test API Health (check if working)
+echo [3] 🔧 Fix Issues (if you get errors)
+echo [4] 📖 View Help Guide (documentation)
+echo [5] ❌ Exit
 echo.
-echo NOTE: If you changed prisma/schema.prisma, use option 4!
+echo 💡 TIP: Option 1 automatically handles any database changes!
 echo.
-set /p choice="Enter your choice (1-6): "
+set /p choice="Enter your choice (1-5): "
 
 if "%choice%"=="1" goto deploy
 if "%choice%"=="2" goto test
 if "%choice%"=="3" goto fix
-if "%choice%"=="4" goto update
-if "%choice%"=="5" goto guide
-if "%choice%"=="6" goto schemahelp
-if "%choice%"=="7" goto exit
+if "%choice%"=="4" goto guide
+if "%choice%"=="5" goto exit
 goto menu
 
 :deploy
@@ -55,24 +57,13 @@ call FIX-PRISMA.bat
 pause
 goto menu
 
-:update
-cls
-echo Updating database...
-call UPDATE-DATABASE.bat
-pause
-goto menu
-
 :guide
 cls
-echo Opening deployment guide...
+echo Opening help documentation...
 start CEO-DEPLOYMENT-GUIDE.md
-pause
-goto menu
-
-:schemahelp
-cls
-echo Opening schema changes guide...
 start SCHEMA-CHANGES-GUIDE.md
+start "📱 QUICK START FOR CEO.md"
+start "🚀 GITHUB ACTIONS DEPLOYMENT GUIDE.md"
 pause
 goto menu
 
